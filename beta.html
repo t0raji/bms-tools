@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>BMS関連ツール</title>
+<style>
+  body { font-family: sans-serif; max-width: 640px; margin: 2em auto; padding: 0 1em; line-height: 1.7; color: #111; background: #fff; }
+  h1 { font-size: 1.3em; }
+  h2 { font-size: 1.1em; margin-top: 2em; border-bottom: 1px solid #999; }
+  h3 { font-size: 1em; margin: 1.2em 0 .2em; }
+  p { margin: .2em 0; }
+  ul { margin: .3em 0; padding-left: 1.4em; }
+  details { margin: .3em 0; }
+  summary { cursor: pointer; }
+  .small { font-size: .9em; color: #555; }
+  .err { color: #b00; }
+  footer { margin-top: 3em; font-size: .9em; color: #555; border-top: 1px solid #ccc; padding-top: .5em; }
+</style>
+</head>
+<body>
+
+<h1>BMS関連ツール</h1>
+
+<h2>先行版 (beta)</h2>
+<ul>
+  <li>
+    bmstracker v1.1 beta (2026-11-02)
+    <button type="button" class="dl"
+      data-file="files/beta/bmstracker_v1.1beta.zip.enc"
+      data-name="bmstracker_v1.1beta.zip">ダウンロード</button>
+  </li>
+</ul>
+<p id="msg" class="small"></p>
+
+<h2>Beatoraja / LR2oraja 用</h2>
+
+<h3>bmstracker</h3>
+<p>プレイ記録閲覧ツール</p>
+<ul>
+  <li><a href="files/bmstracker_v1.0.zip">v1.0</li>
+</ul>
+<details>
+  <summary>過去のバージョン</summary>
+  <ul>
+    <li><a href="files/bmstracker_v0.9.zip">v0.9</li>
+  </ul>
+</details>
+
+<h3>oraja_log_watcher</h3>
+<p>ログ監視ツール</p>
+<ul>
+  <li><a href="files/oraja_log_watcher_v1.0.zip">v1.0</li>
+</ul>
+<details>
+  <summary>過去のバージョン</summary>
+  <ul>
+    <li><a href="files/oraja_log_watcher_v0.9.zip">v0.9</li>
+  </ul>
+</details>
+
+<h2>LR2 用</h2>
+
+<h3>bmstracker-lr2</h3>
+<p>プレイ記録閲覧ツール</p>
+<ul>
+  <li><a href="files/update_tracker_lr2-v1.3a.exe">v1.3a</li>
+</ul>
+<details>
+  <summary>過去のバージョン</summary>
+  <ul>
+    <li><a href="files/update_tracker_lr2-v1.2.exe">v1.2</li>
+  </ul>
+</details>
+
+<footer>二次配布禁止</footer>
+
+<script>
+  // 暗号化ファイル形式: salt(16) + iv(12) + 暗号文 + tag(16) / AES-256-GCM, PBKDF2-SHA256 600000回
+  async function decryptFile(buf, password) {
+    const data = new Uint8Array(buf);
+    const salt = data.slice(0, 16);
+    const iv = data.slice(16, 28);
+    const body = data.slice(28);
+    const base = await crypto.subtle.importKey(
+      "raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+    const key = await crypto.subtle.deriveKey(
+      { name: "PBKDF2", salt: salt, iterations: 600000, hash: "SHA-256" },
+      base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+    return crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, body);
+  }
+
+  const msg = document.getElementById("msg");
+  document.querySelectorAll("button.dl").forEach(function (btn) {
+    btn.addEventListener("click", async function () {
+      const password = prompt("パスワードを入力してください");
+      if (!password) return;
+      msg.className = "small";
+      msg.textContent = "処理中...";
+      try {
+        const res = await fetch(btn.dataset.file);
+        if (!res.ok) throw new Error("fetch");
+        const plain = await decryptFile(await res.arrayBuffer(), password);
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([plain]));
+        a.download = btn.dataset.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        msg.textContent = "";
+      } catch (e) {
+        msg.className = "err";
+        msg.textContent = "ダウンロードできませんでした。パスワードを確認してください。";
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
