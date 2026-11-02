@@ -39,7 +39,7 @@
 <h3>bmstracker</h3>
 <p>プレイ記録閲覧ツール</p>
 <ul>
-  <li><a href="bmstracker-2.3stable.zip">v2.3</a></li>
+  <li><a href="files/bmstracker-2.3stable.zip">v2.3</a></li>
 </ul>
 
 <h3>beatoraja log watcher</h3>
@@ -53,13 +53,12 @@
 <h3>bmstracker-lr2</h3>
 <p>プレイ記録閲覧ツール</p>
 <ul>
-  <li><a href="bmstracker-LR2-3.1stable.zip">v3.1</a></li>
+  <li><a href="files/bmstracker-LR2-3.1stable.zip">v3.1</a></li>
 </ul>
 
 <footer>二次配布禁止</footer>
 
 <script>
-  // 暗号化ファイル形式: salt(16) + iv(12) + 暗号文 + tag(16) / AES-256-GCM, PBKDF2-SHA256 600000回
   async function decryptFile(buf, password) {
     const data = new Uint8Array(buf);
     const salt = data.slice(0, 16);
